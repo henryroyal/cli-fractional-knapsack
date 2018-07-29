@@ -51,55 +51,69 @@ fn main() {
 
     items.sort_by(|a, b| b.cmp(a));
     let result = maximum_value(max_count, max_weight, &items);
-    println!("{:.4}", result);
+    println!("{:.6}", result);
 
     std::process::exit(0);
 }
 
-
+/*
+while knapsack is not full
+chose item with max value/weight
+if item fits into knapsack, take all of it
+otherwise, take so much as to fill the knapsack
+return total value and amounts taken
+*/
 fn maximum_value(max_count: i32, max_weight: f64, items: &Vec<Item>) -> f64 {
+    let DEBUG = false;
     let mut ix: usize = 0;
     let mut value: f64 = 0.0;
     let mut weight: f64 = 0.0;
     let mut count: i32 = 0;
 
-    loop {
-        if ix >= items.len() {
+    for i in items {
+        if DEBUG {
+            println!("current value: {}\nremaining weight: {}\nremaining count: {}\n",
+                     value, max_weight - weight, max_count - count,
+            );
+        }
+        if max_weight - weight <= 0.0 {
             return value;
         }
 
-        loop {
-            if count >= max_count {
-                return value;
+        if max_count - count <= 0 {
+            return value;
+        }
+
+        let remaining_weight = max_weight - weight;
+        let remaining_count = max_count - count;
+        let fractional_count = 1.0 / (i.weight / (max_weight - weight));
+        let fractional_weight = i.weight * fractional_count;
+        let fractional_value = i.value * fractional_count;
+
+        // take whole item if it fits, starting with highest density of value
+        if (max_weight - weight) >= i.weight {
+            count += 1;
+            value += i.value;
+            weight += i.weight;
+
+            if DEBUG {
+                println!("took all of item with w:{} and v:{} (ratio: {})",
+                         i.weight, i.value, i.ratio());
             }
+        } else {
+            // otherwise, take (1 / (i.weight / remaining_weight) of the item
+            count += 1;
+            value += fractional_value;
+            weight += fractional_weight;
 
-            if weight >= max_weight {
-                return value;
-            }
-
-            if (max_weight - weight) >= items[ix].weight // try to fit full object in
-                {
-                    count += 1;
-                    value = value + items[ix].value;
-                    weight = weight + items[ix].weight;
-                    println!("c: {}\tv: {}\t w: {}", count, value, weight);
-                }
-
-            let fractional_weight = max_weight / items[ix].weight;
-            if fractional_weight <= 1.0 {
-                let fractional_value = items[ix].value * fractional_weight;
-                if (max_weight - fractional_weight) >= fractional_weight {
-                    count += 1;
-                    value += fractional_value;
-                    weight += fractional_weight;
-                    println!("c: {}\tv: {}\t w: {}", count, fractional_value, fractional_weight);
-                }
-            } else {
-                break; // continue to item with next lowest value/weight ratio
+            if DEBUG {
+                println!("took {} of item with w:{} and v:{} (ratio: {})",
+                         fractional_count, i.weight, i.value, i.ratio());
             }
         }
-        ix += 1;
     }
+
+    return value;
 }
 
 
