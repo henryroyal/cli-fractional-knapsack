@@ -33,7 +33,6 @@ impl PartialEq for Item {
 
 
 fn main() {
-    let DEBUG = false;
     let first_line = read_input();
     let max_count: i32 = first_line[0] as i32;
     let max_weight = first_line[1];
@@ -55,6 +54,7 @@ fn main() {
 
     std::process::exit(0);
 }
+
 
 /*
 while knapsack is not full
