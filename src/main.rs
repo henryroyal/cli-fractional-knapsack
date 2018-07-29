@@ -3,9 +3,9 @@ struct Item {
     weight: f64,
 }
 
-// https://doc.rust-lang.org/std/cmp/trait.Ord.html#how-can-i-implement-ord
+
 impl Item {
-    fn ratio(&self) -> f64 {
+    fn value_density(&self) -> f64 {
         return self.value / self.weight;
     }
 }
@@ -14,7 +14,7 @@ impl Eq for Item {}
 
 impl Ord for Item {
     fn cmp(&self, other: &Item) -> std::cmp::Ordering {
-        let compared = self.ratio().partial_cmp(&other.ratio());
+        let compared = self.value_density().partial_cmp(&other.value_density());
         return compared.unwrap();
     }
 }
@@ -27,7 +27,7 @@ impl PartialOrd for Item {
 
 impl PartialEq for Item {
     fn eq(&self, other: &Item) -> bool {
-        return self.ratio() == self.ratio();
+        return self.value_density() == self.value_density();
     }
 }
 
@@ -47,9 +47,8 @@ fn main() {
         items.push(Item { value: input[0], weight: input[1] })
     }
 
-
     items.sort_by(|a, b| b.cmp(a));
-    let result = maximum_value(max_count, max_weight, &items);
+    let result = maximize_value(max_count, max_weight, &items);
     println!("{:.6}", result);
 
     std::process::exit(0);
@@ -57,13 +56,13 @@ fn main() {
 
 
 /*
-while knapsack is not full
-chose item with max value/weight
-if item fits into knapsack, take all of it
-otherwise, take so much as to fill the knapsack
-return total value and amounts taken
+    while knapsack is not full
+    chose item with max value/weight
+    if item fits into knapsack, take all of it
+    otherwise, take so much as to fill the knapsack
+    return total value and amounts taken
 */
-fn maximum_value(max_count: i32, max_weight: f64, items: &Vec<Item>) -> f64 {
+fn maximize_value(max_count: i32, max_weight: f64, items: &Vec<Item>) -> f64 {
     let DEBUG = false;
     let mut ix: usize = 0;
     let mut value: f64 = 0.0;
@@ -98,7 +97,7 @@ fn maximum_value(max_count: i32, max_weight: f64, items: &Vec<Item>) -> f64 {
 
             if DEBUG {
                 println!("took all of item with w:{} and v:{} (ratio: {})",
-                         i.weight, i.value, i.ratio());
+                         i.weight, i.value, i.value_density());
             }
         } else {
             // otherwise, take (1 / (i.weight / remaining_weight) of the item
@@ -108,7 +107,7 @@ fn maximum_value(max_count: i32, max_weight: f64, items: &Vec<Item>) -> f64 {
 
             if DEBUG {
                 println!("took {} of item with w:{} and v:{} (ratio: {})",
-                         fractional_count, i.weight, i.value, i.ratio());
+                         fractional_count, i.weight, i.value, i.value_density());
             }
         }
     }
